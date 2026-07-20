@@ -1,1 +1,871 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111111" />
+  <title>Nori House Sushi — Pedido en línea</title>
+  <style>
+    :root{
+      --bg:#f6f3ee;
+      --card:#ffffff;
+      --ink:#171717;
+      --muted:#737373;
+      --line:#e7e1d8;
+      --brand:#d62828;
+      --brand-dark:#a81616;
+      --dark:#111111;
+      --green:#167d4d;
+      --shadow:0 14px 40px rgba(0,0,0,.09);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    img{max-width:100%;display:block}
+    .hidden{display:none!important}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgba(17,17,17,.96);
+      color:#fff;
+      border-bottom:1px solid rgba(255,255,255,.1);
+      backdrop-filter:blur(12px);
+    }
+    .topbar-inner{
+      max-width:1180px;
+      margin:auto;
+      padding:13px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:11px;
+      min-width:0;
+    }
+    .logo{
+      width:43px;
+      height:43px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:var(--brand);
+      font-size:24px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
+    }
+    .brand strong{display:block;font-size:16px;letter-spacing:.3px}
+    .brand small{display:block;color:#cfcfcf;font-size:12px}
+    .cart-top{
+      border:0;
+      background:#fff;
+      color:#111;
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+    }
+    .cart-badge{
+      min-width:24px;
+      height:24px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background:var(--brand);
+      color:#fff;
+      font-size:12px;
+      padding:0 6px;
+    }
+
+    .hero{
+      max-width:1180px;
+      margin:24px auto 0;
+      padding:0 18px;
+    }
+    .hero-card{
+      min-height:340px;
+      border-radius:30px;
+      overflow:hidden;
+      position:relative;
+      display:grid;
+      grid-template-columns:1.25fr .75fr;
+      background:
+        radial-gradient(circle at 83% 20%, rgba(214,40,40,.7), transparent 27%),
+        linear-gradient(135deg,#101010 0%,#202020 58%,#080808 100%);
+      color:#fff;
+      box-shadow:var(--shadow);
+    }
+    .hero-content{
+      padding:48px;
+      align-self:center;
+      position:relative;
+      z-index:2;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:13px;
+      font-weight:800;
+    }
+    .hero h1{
+      margin:18px 0 12px;
+      font-size:clamp(38px,6vw,72px);
+      line-height:.92;
+      letter-spacing:-2px;
+      max-width:700px;
+    }
+    .hero p{
+      margin:0 0 22px;
+      color:#d7d7d7;
+      max-width:590px;
+      font-size:17px;
+      line-height:1.55;
+    }
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .primary,.secondary{
+      border:0;
+      border-radius:14px;
+      padding:13px 18px;
+      font-weight:900;
+    }
+    .primary{background:var(--brand);color:#fff}
+    .primary:hover{background:var(--brand-dark)}
+    .secondary{
+      background:rgba(255,255,255,.1);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .hero-art{
+      display:grid;
+      place-items:center;
+      position:relative;
+      overflow:hidden;
+      min-height:300px;
+    }
+    .plate{
+      width:250px;
+      height:250px;
+      border-radius:50%;
+      background:#f4efe6;
+      border:15px solid rgba(255,255,255,.12);
+      box-shadow:0 35px 65px rgba(0,0,0,.4);
+      display:grid;
+      place-items:center;
+      transform:rotate(-8deg);
+      font-size:115px;
+    }
+    .floating{
+      position:absolute;
+      font-size:44px;
+      filter:drop-shadow(0 10px 16px rgba(0,0,0,.4));
+    }
+    .f1{top:34px;right:35px;transform:rotate(14deg)}
+    .f2{bottom:25px;left:18px;transform:rotate(-20deg)}
+    .f3{bottom:42px;right:22px}
+
+    .promo-strip{
+      max-width:1180px;
+      margin:18px auto 0;
+      padding:0 18px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+    .promo{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      display:flex;
+      gap:13px;
+      align-items:center;
+    }
+    .promo-icon{
+      width:46px;height:46px;border-radius:14px;
+      display:grid;place-items:center;
+      background:#f5e5e5;font-size:23px;
+    }
+    .promo strong{display:block;font-size:14px}
+    .promo span{font-size:12px;color:var(--muted)}
+
+    .content{
+      max-width:1180px;
+      margin:30px auto 100px;
+      padding:0 18px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 350px;
+      gap:24px;
+      align-items:start;
+    }
+    .menu-panel{min-width:0}
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:14px;
+    }
+    .section-head h2{margin:0;font-size:28px}
+    .section-head p{margin:5px 0 0;color:var(--muted)}
+
+    .categories{
+      display:flex;
+      gap:9px;
+      overflow:auto;
+      padding:2px 0 12px;
+      scrollbar-width:none;
+    }
+    .categories::-webkit-scrollbar{display:none}
+    .category{
+      flex:none;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--ink);
+      border-radius:999px;
+      padding:10px 15px;
+      font-weight:800;
+    }
+    .category.active{
+      background:var(--dark);
+      color:#fff;
+      border-color:var(--dark);
+    }
+
+    .products{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:15px;
+    }
+    .product{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      overflow:hidden;
+      display:flex;
+      min-height:190px;
+      transition:.2s ease;
+    }
+    .product:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+    .product-art{
+      width:39%;
+      flex:none;
+      display:grid;
+      place-items:center;
+      font-size:68px;
+      background:
+        radial-gradient(circle at 30% 25%,rgba(255,255,255,.8),transparent 22%),
+        linear-gradient(145deg,#f0d9c6,#ddb79d);
+    }
+    .product-body{
+      padding:17px;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      flex:1;
+    }
+    .product-tag{
+      align-self:flex-start;
+      font-size:11px;
+      font-weight:900;
+      color:var(--brand);
+      background:#fbeaea;
+      border-radius:999px;
+      padding:5px 8px;
+      margin-bottom:8px;
+    }
+    .product h3{font-size:18px;margin:0 0 6px}
+    .product p{
+      font-size:13px;
+      line-height:1.45;
+      color:var(--muted);
+      margin:0 0 12px;
+    }
+    .product-bottom{
+      margin-top:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .price{font-weight:950;font-size:18px}
+    .add{
+      width:38px;height:38px;border-radius:12px;border:0;
+      background:var(--dark);color:#fff;font-size:22px;
+      display:grid;place-items:center;
+    }
+    .add:hover{background:var(--brand)}
+
+    .cart-panel{
+      position:sticky;
+      top:84px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 8px 30px rgba(0,0,0,.06);
+    }
+    .cart-head{
+      padding:20px;
+      background:var(--dark);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .cart-head h2{font-size:19px;margin:0}
+    .cart-body{padding:18px}
+    .empty{
+      text-align:center;
+      padding:28px 10px;
+      color:var(--muted);
+    }
+    .empty .big{font-size:48px;margin-bottom:8px}
+    .cart-list{display:grid;gap:12px}
+    .cart-item{
+      padding-bottom:12px;
+      border-bottom:1px solid var(--line);
+    }
+    .cart-item-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .cart-item strong{font-size:14px}
+    .cart-item small{display:block;color:var(--muted);margin-top:3px}
+    .cart-controls{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:8px;
+    }
+    .qty-btn{
+      width:28px;height:28px;border-radius:9px;
+      border:1px solid var(--line);background:#fff;font-weight:900;
+    }
+    .remove{
+      margin-left:auto;
+      border:0;background:transparent;color:var(--brand);
+      font-size:12px;font-weight:800;
+    }
+    .totals{
+      display:grid;
+      gap:8px;
+      padding-top:16px;
+      margin-top:8px;
+    }
+    .total-row{
+      display:flex;justify-content:space-between;
+      color:var(--muted);font-size:14px;
+    }
+    .total-row.grand{
+      color:var(--ink);
+      font-size:19px;
+      font-weight:950;
+      padding-top:10px;
+      border-top:1px solid var(--line);
+    }
+    .checkout{
+      width:100%;
+      border:0;
+      border-radius:14px;
+      background:var(--brand);
+      color:#fff;
+      padding:14px;
+      font-weight:950;
+      margin-top:14px;
+    }
+    .checkout:disabled{background:#c9c9c9;cursor:not-allowed}
+
+    .mobile-cart{
+      display:none;
+      position:fixed;
+      left:12px;right:12px;bottom:12px;
+      z-index:35;
+      border:0;
+      border-radius:16px;
+      padding:14px 16px;
+      background:var(--dark);
+      color:#fff;
+      box-shadow:0 15px 40px rgba(0,0,0,.28);
+      align-items:center;
+      justify-content:space-between;
+      font-weight:900;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      background:rgba(0,0,0,.55);
+      display:grid;
+      place-items:center;
+      padding:16px;
+    }
+    .modal{
+      width:min(700px,100%);
+      max-height:92vh;
+      overflow:auto;
+      border-radius:24px;
+      background:#fff;
+      box-shadow:0 30px 80px rgba(0,0,0,.35);
+    }
+    .modal-head{
+      padding:20px 22px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:sticky;top:0;background:#fff;z-index:2;
+    }
+    .modal-head h2{margin:0;font-size:21px}
+    .close{
+      width:38px;height:38px;border-radius:12px;border:1px solid var(--line);
+      background:#fff;font-size:20px;
+    }
+    .modal-body{padding:22px}
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .field{display:grid;gap:7px}
+    .field.full{grid-column:1/-1}
+    .field label{font-size:13px;font-weight:850}
+    .field input,.field select,.field textarea{
+      width:100%;
+      border:1px solid #d8d2c8;
+      border-radius:12px;
+      padding:12px 13px;
+      outline:none;
+      background:#fff;
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{
+      border-color:var(--brand);
+      box-shadow:0 0 0 3px rgba(214,40,40,.1);
+    }
+    .field textarea{min-height:88px;resize:vertical}
+    .submit-order{
+      width:100%;
+      border:0;border-radius:14px;
+      padding:15px;background:var(--brand);color:#fff;
+      font-weight:950;margin-top:18px;
+    }
+    .demo-note{
+      background:#fff5d7;
+      border:1px solid #f1dc9f;
+      color:#6d571b;
+      border-radius:13px;
+      padding:11px 13px;
+      font-size:12px;
+      margin-bottom:16px;
+    }
+    .success{
+      padding:35px 24px;
+      text-align:center;
+    }
+    .success-icon{
+      width:78px;height:78px;border-radius:50%;
+      display:grid;place-items:center;
+      background:#e4f5eb;color:var(--green);
+      font-size:38px;margin:0 auto 16px;
+    }
+    .success h2{margin:0 0 8px}
+    .success p{color:var(--muted);line-height:1.5}
+    .order-number{
+      display:inline-block;
+      background:#111;color:#fff;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:950;
+      margin:9px 0 18px;
+    }
+    .success button{
+      border:0;border-radius:13px;padding:12px 17px;
+      background:var(--brand);color:#fff;font-weight:900;
+    }
+
+    footer{
+      background:#111;color:#ddd;
+      padding:28px 18px 90px;
+      text-align:center;font-size:13px;
+    }
+
+    @media (max-width:960px){
+      .content{grid-template-columns:1fr}
+      .cart-panel{display:none}
+      .mobile-cart{display:flex}
+      .hero-card{grid-template-columns:1fr}
+      .hero-art{display:none}
+      .promo-strip{grid-template-columns:1fr}
+    }
+    @media (max-width:680px){
+      .hero{margin-top:14px}
+      .hero-content{padding:32px 23px}
+      .hero-card{min-height:350px}
+      .products{grid-template-columns:1fr}
+      .product{min-height:170px}
+      .product-art{font-size:58px}
+      .form-grid{grid-template-columns:1fr}
+      .field.full{grid-column:auto}
+      .topbar-inner{padding:10px 12px}
+      .brand small{display:none}
+      .cart-top{padding:9px 11px}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo">🍣</div>
+        <div>
+          <strong>NORI HOUSE SUSHI</strong>
+          <small>Dark kitchen · Entrega a domicilio</small>
+        </div>
+      </div>
+      <button class="cart-top" onclick="scrollToCart()">
+        🛒 Carrito <span class="cart-badge" id="topCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-card">
+        <div class="hero-content">
+          <span class="eyebrow">🔥 Preparado al momento</span>
+          <h1>Sushi directo hasta tu puerta.</h1>
+          <p>Rollos, entradas y combos preparados al momento. Ordena en línea de forma rápida y sencilla.</p>
+          <div class="hero-actions">
+            <button class="primary" onclick="document.getElementById('menu').scrollIntoView()">Ver menú</button>
+            <button class="secondary" onclick="filterProducts('Promociones', document.querySelector('[data-category=Promociones]'))">Ver promociones</button>
+          </div>
+        </div>
+        <div class="hero-art">
+          <div class="plate">🍱</div>
+          <span class="floating f1">🥢</span>
+          <span class="floating f2">🍙</span>
+          <span class="floating f3">🌶️</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="promo-strip">
+      <div class="promo">
+        <div class="promo-icon">🛵</div>
+        <div><strong>Entrega a domicilio</strong><span>Consulta cobertura al finalizar</span></div>
+      </div>
+      <div class="promo">
+        <div class="promo-icon">🥢</div>
+        <div><strong>Ingredientes frescos</strong><span>Todo se prepara al momento</span></div>
+      </div>
+      <div class="promo">
+        <div class="promo-icon">💳</div>
+        <div><strong>Pago sencillo</strong><span>Efectivo o transferencia</span></div>
+      </div>
+    </section>
+
+    <section class="content" id="menu">
+      <div class="menu-panel">
+        <div class="section-head">
+          <div>
+            <h2>Nuestro menú</h2>
+            <p>Información provisional para demostración.</p>
+          </div>
+        </div>
+
+        <div class="categories">
+          <button class="category active" data-category="Todos" onclick="filterProducts('Todos',this)">Todos</button>
+          <button class="category" data-category="Promociones" onclick="filterProducts('Promociones',this)">Promociones</button>
+          <button class="category" data-category="Rollos" onclick="filterProducts('Rollos',this)">Rollos</button>
+          <button class="category" data-category="Entradas" onclick="filterProducts('Entradas',this)">Entradas</button>
+          <button class="category" data-category="Arroces" onclick="filterProducts('Arroces',this)">Arroces</button>
+          <button class="category" data-category="Bebidas" onclick="filterProducts('Bebidas',this)">Bebidas</button>
+        </div>
+
+        <div class="products" id="products"></div>
+      </div>
+
+      <aside class="cart-panel" id="desktopCart">
+        <div class="cart-head">
+          <h2>Tu pedido</h2>
+          <span id="cartCountText">0 productos</span>
+        </div>
+        <div class="cart-body" id="cartBody"></div>
+      </aside>
+    </section>
+  </main>
+
+  <button class="mobile-cart" id="mobileCart" onclick="openCheckout()">
+    <span>🛒 <span id="mobileCount">0</span> productos</span>
+    <span id="mobileTotal">$0</span>
+  </button>
+
+  <div class="overlay hidden" id="checkoutOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Datos de entrega</h2>
+        <button class="close" onclick="closeCheckout()">×</button>
+      </div>
+      <div class="modal-body" id="checkoutContent">
+        <div class="demo-note">
+          Demostración provisional: al conectar el sistema real, este pedido se imprimirá en cocina y se enviará a OpenWA.
+        </div>
+        <form id="checkoutForm" onsubmit="submitOrder(event)">
+          <div class="form-grid">
+            <div class="field">
+              <label>Nombre completo</label>
+              <input required name="name" placeholder="Ej. Carlos Ramírez" />
+            </div>
+            <div class="field">
+              <label>Teléfono</label>
+              <input required name="phone" inputmode="tel" placeholder="462 000 0000" />
+            </div>
+            <div class="field full">
+              <label>Calle y número</label>
+              <input required name="address" placeholder="Ej. Av. Reforma 125" />
+            </div>
+            <div class="field">
+              <label>Colonia</label>
+              <input required name="neighborhood" placeholder="Ej. Las Heras" />
+            </div>
+            <div class="field">
+              <label>Código postal</label>
+              <input name="zip" inputmode="numeric" placeholder="36500" />
+            </div>
+            <div class="field full">
+              <label>Referencias del domicilio</label>
+              <textarea name="references" placeholder="Color de la casa, entre calles, negocio cercano..."></textarea>
+            </div>
+            <div class="field">
+              <label>Método de pago</label>
+              <select required name="payment" onchange="toggleChange(this.value)">
+                <option value="">Seleccionar</option>
+                <option>Efectivo</option>
+                <option>Transferencia</option>
+              </select>
+            </div>
+            <div class="field hidden" id="changeField">
+              <label>¿Con cuánto pagas?</label>
+              <input name="change" inputmode="decimal" placeholder="$500" />
+            </div>
+            <div class="field full">
+              <label>Indicaciones generales</label>
+              <textarea name="notes" placeholder="Ej. Marcar al llegar, no tocar el timbre..."></textarea>
+            </div>
+          </div>
+          <button class="submit-order" type="submit">Confirmar pedido</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Nori House Sushi · Sitio demostrativo con información provisional
+  </footer>
+
+  <script>
+    const products = [
+      {id:1,name:"Combo Nori",category:"Promociones",price:249,emoji:"🍱",tag:"PROMO",desc:"2 rollos clásicos, 1 orden de yakimeshi y 2 bebidas."},
+      {id:2,name:"Rollo California",category:"Rollos",price:105,emoji:"🍣",tag:"CLÁSICO",desc:"Surimi, aguacate, pepino y queso crema."},
+      {id:3,name:"Rollo Mar y Tierra",category:"Rollos",price:145,emoji:"🍤",tag:"FAVORITO",desc:"Camarón, res, aguacate y queso crema."},
+      {id:4,name:"Rollo Tampico",category:"Rollos",price:135,emoji:"🥢",tag:"ESPECIAL",desc:"Rollo empanizado con topping de tampico."},
+      {id:5,name:"Rollo Cielo Rojo",category:"Rollos",price:155,emoji:"🌶️",tag:"PICANTE",desc:"Camarón, queso crema, aguacate y salsa spicy."},
+      {id:6,name:"Yakimeshi Mixto",category:"Arroces",price:95,emoji:"🍚",tag:"NUEVO",desc:"Arroz frito con pollo, res, camarón y verduras."},
+      {id:7,name:"Gohan Especial",category:"Arroces",price:110,emoji:"🍛",tag:"ESPECIAL",desc:"Arroz al vapor con tampico, aguacate y camarón."},
+      {id:8,name:"Edamames",category:"Entradas",price:65,emoji:"🫛",tag:"ENTRADA",desc:"Edamames al vapor con sal de grano."},
+      {id:9,name:"Kushiage de Queso",category:"Entradas",price:75,emoji:"🧀",tag:"4 PIEZAS",desc:"Brochetas empanizadas rellenas de queso."},
+      {id:10,name:"Camarones Crunch",category:"Entradas",price:119,emoji:"🍤",tag:"6 PIEZAS",desc:"Camarones empanizados con aderezo de la casa."},
+      {id:11,name:"Té Japonés",category:"Bebidas",price:35,emoji:"🍵",tag:"500 ML",desc:"Té frío sabor limón o durazno."},
+      {id:12,name:"Refresco",category:"Bebidas",price:30,emoji:"🥤",tag:"355 ML",desc:"Variedad sujeta a disponibilidad."}
+    ];
+
+    let cart = JSON.parse(localStorage.getItem("noriDemoCart") || "[]");
+
+    function money(value){
+      return new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}).format(value);
+    }
+
+    function renderProducts(category="Todos"){
+      const container = document.getElementById("products");
+      const list = category==="Todos" ? products : products.filter(p=>p.category===category);
+      container.innerHTML = list.map(p=>`
+        <article class="product">
+          <div class="product-art">${p.emoji}</div>
+          <div class="product-body">
+            <span class="product-tag">${p.tag}</span>
+            <h3>${p.name}</h3>
+            <p>${p.desc}</p>
+            <div class="product-bottom">
+              <span class="price">${money(p.price)}</span>
+              <button class="add" aria-label="Agregar ${p.name}" onclick="addToCart(${p.id})">+</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function filterProducts(category,btn){
+      document.querySelectorAll(".category").forEach(b=>b.classList.remove("active"));
+      if(btn) btn.classList.add("active");
+      renderProducts(category);
+      document.getElementById("menu").scrollIntoView({behavior:"smooth"});
+    }
+
+    function addToCart(id){
+      const found = cart.find(i=>i.id===id);
+      if(found) found.qty++;
+      else cart.push({id,qty:1});
+      saveCart();
+    }
+
+    function changeQty(id,delta){
+      const item = cart.find(i=>i.id===id);
+      if(!item) return;
+      item.qty += delta;
+      if(item.qty<=0) cart = cart.filter(i=>i.id!==id);
+      saveCart();
+    }
+
+    function removeItem(id){
+      cart = cart.filter(i=>i.id!==id);
+      saveCart();
+    }
+
+    function saveCart(){
+      localStorage.setItem("noriDemoCart",JSON.stringify(cart));
+      renderCart();
+    }
+
+    function getTotals(){
+      const subtotal = cart.reduce((sum,item)=>{
+        const p=products.find(x=>x.id===item.id);
+        return sum+(p.price*item.qty);
+      },0);
+      const delivery = cart.length ? 35 : 0;
+      return {subtotal,delivery,total:subtotal+delivery};
+    }
+
+    function renderCart(){
+      const body=document.getElementById("cartBody");
+      const count=cart.reduce((s,i)=>s+i.qty,0);
+      const totals=getTotals();
+
+      document.getElementById("topCount").textContent=count;
+      document.getElementById("mobileCount").textContent=count;
+      document.getElementById("mobileTotal").textContent=money(totals.total);
+      document.getElementById("cartCountText").textContent=`${count} producto${count===1?"":"s"}`;
+
+      if(!cart.length){
+        body.innerHTML=`
+          <div class="empty">
+            <div class="big">🛒</div>
+            <strong>Tu carrito está vacío</strong>
+            <p>Agrega algunos productos para comenzar.</p>
+          </div>`;
+        return;
+      }
+
+      body.innerHTML=`
+        <div class="cart-list">
+          ${cart.map(item=>{
+            const p=products.find(x=>x.id===item.id);
+            return `
+              <div class="cart-item">
+                <div class="cart-item-top">
+                  <div><strong>${p.name}</strong><small>${money(p.price)} c/u</small></div>
+                  <strong>${money(p.price*item.qty)}</strong>
+                </div>
+                <div class="cart-controls">
+                  <button class="qty-btn" onclick="changeQty(${p.id},-1)">−</button>
+                  <strong>${item.qty}</strong>
+                  <button class="qty-btn" onclick="changeQty(${p.id},1)">+</button>
+                  <button class="remove" onclick="removeItem(${p.id})">Eliminar</button>
+                </div>
+              </div>`;
+          }).join("")}
+        </div>
+        <div class="totals">
+          <div class="total-row"><span>Subtotal</span><strong>${money(totals.subtotal)}</strong></div>
+          <div class="total-row"><span>Envío provisional</span><strong>${money(totals.delivery)}</strong></div>
+          <div class="total-row grand"><span>Total</span><span>${money(totals.total)}</span></div>
+        </div>
+        <button class="checkout" onclick="openCheckout()">Continuar pedido</button>`;
+    }
+
+    function openCheckout(){
+      if(!cart.length){
+        document.getElementById("menu").scrollIntoView({behavior:"smooth"});
+        return;
+      }
+      document.getElementById("checkoutOverlay").classList.remove("hidden");
+      document.body.style.overflow="hidden";
+    }
+
+    function closeCheckout(){
+      document.getElementById("checkoutOverlay").classList.add("hidden");
+      document.body.style.overflow="";
+    }
+
+    function scrollToCart(){
+      if(window.innerWidth<=960) openCheckout();
+      else document.getElementById("desktopCart").scrollIntoView({behavior:"smooth",block:"center"});
+    }
+
+    function toggleChange(value){
+      document.getElementById("changeField").classList.toggle("hidden",value!=="Efectivo");
+    }
+
+    function submitOrder(event){
+      event.preventDefault();
+      const now=new Date();
+      const order=`SUSHI-${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${String(Math.floor(Math.random()*900)+100)}`;
+      document.getElementById("checkoutContent").innerHTML=`
+        <div class="success">
+          <div class="success-icon">✓</div>
+          <h2>¡Pedido recibido!</h2>
+          <p>Esta es una simulación de la confirmación que verá el cliente.</p>
+          <div class="order-number">${order}</div>
+          <p>En la versión final, en este momento se imprimirá la comanda en cocina y se enviará el mensaje al grupo de moto envíos.</p>
+          <button onclick="finishDemo()">Cerrar demostración</button>
+        </div>`;
+      cart=[];
+      saveCart();
+    }
+
+    function finishDemo(){
+      closeCheckout();
+      location.reload();
+    }
+
+    document.getElementById("checkoutOverlay").addEventListener("click",e=>{
+      if(e.target.id==="checkoutOverlay") closeCheckout();
+    });
+
+    renderProducts();
+    renderCart();
+  </script>
+</body>
+</html>
