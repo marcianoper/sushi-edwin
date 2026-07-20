@@ -769,6 +769,11 @@
     const OPENWA_ENDPOINT = "http://127.0.0.1:5000/enviar-moto-envio";
     const OPENWA_ENABLED = false;
 
+    // Servidor de impresión instalado en la computadora de cocina.
+    // Si la página se abre en otro dispositivo, cambia 127.0.0.1 por la IP
+    // local de la computadora de cocina, por ejemplo: 192.168.1.50
+    const PRINT_SERVER_URL = "http://127.0.0.1:5002";
+
     function money(value){
       return new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}).format(value);
     }
@@ -937,6 +942,60 @@
       window.print();
     }
 
+    function setPrintStatus(message, success=false){
+      const status=document.getElementById("printStatus");
+      if(!status) return;
+      status.textContent=message;
+      status.style.color=success ? "#167d4d" : "#a81616";
+    }
+
+    async function checkPrintServer(){
+      try{
+        const response=await fetch(`${PRINT_SERVER_URL}/estado`,{cache:"no-store"});
+        if(!response.ok) throw new Error("Servidor no disponible");
+        const data=await response.json();
+        return data;
+      }catch(error){
+        return null;
+      }
+    }
+
+    async function sendKitchenToFlask(showStatus=true){
+      if(!lastOrderPayload || !lastOrderPayload.pedido_id){
+        if(showStatus) setPrintStatus("No hay una comanda preparada.");
+        return false;
+      }
+
+      try{
+        if(showStatus) setPrintStatus("Enviando comanda a cocina...");
+
+        const response=await fetch(`${PRINT_SERVER_URL}/imprimir-comanda`,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            pedido_id:lastOrderPayload.pedido_id,
+            html:document.getElementById("kitchenTicket").innerHTML,
+            copias:1
+          })
+        });
+
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok){
+          throw new Error(result.error || result.mensaje || "No se pudo imprimir");
+        }
+
+        if(result.duplicado){
+          if(showStatus) setPrintStatus("La comanda ya había sido enviada; no se imprimió de nuevo.",true);
+        }else{
+          if(showStatus) setPrintStatus("Comanda enviada e impresa en cocina.",true);
+        }
+        return true;
+      }catch(error){
+        if(showStatus) setPrintStatus(`Error de impresión: ${error.message}`);
+        return false;
+      }
+    }
+
     function escapeHtml(value){
       return String(value ?? "")
         .replaceAll("&","&amp;")
@@ -1073,6 +1132,7 @@ Favor de confirmar quién toma el envío.`;
           <div class="kitchen-preview">
             <h3>Vista previa de la comanda de cocina</h3>
             ${kitchenHtml}
+            <div id="printStatus" class="send-status">Preparando envío a la impresora...</div>
           </div>
 
           <div class="delivery-preview">
@@ -1082,12 +1142,17 @@ Favor de confirmar quién toma el envío.`;
           </div>
 
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">
-            <button onclick="printKitchenTicket()">Imprimir comanda</button>
+            <button onclick="sendKitchenToFlask()">Reintentar impresión</button>
+            <button onclick="printKitchenTicket()" style="background:#555">Impresión manual</button>
             <button onclick="copyDeliveryMessage()" style="background:#167d4d">Copiar mensaje</button>
             <button onclick="sendToOpenWA()" style="background:#075e54">Enviar por OpenWA</button>
             <button onclick="finishDemo()" style="background:#111">Cerrar demostración</button>
           </div>
         </div>`;
+
+      // Envío automático al servidor Flask de la cocina.
+      setTimeout(()=>sendKitchenToFlask(true),250);
+
       cart=[];
       saveCart();
     }
