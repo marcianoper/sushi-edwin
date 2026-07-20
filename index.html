@@ -772,7 +772,7 @@
     // Servidor de impresión instalado en la computadora de cocina.
     // Si la página se abre en otro dispositivo, cambia 127.0.0.1 por la IP
     // local de la computadora de cocina, por ejemplo: 192.168.1.50
-    const PRINT_SERVER_URL = "http://127.0.0.1:5002";
+    const PRINT_SERVER_URL = "http://127.0.0.1:5050";
 
     function money(value){
       return new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}).format(value);
@@ -969,13 +969,66 @@
       try{
         if(showStatus) setPrintStatus("Enviando comanda a cocina...");
 
-        const response=await fetch(`${PRINT_SERVER_URL}/imprimir-comanda`,{
+        const response=await fetch(`${PRINT_SERVER_URL}/imprimir-sushi`,{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body:JSON.stringify({
             pedido_id:lastOrderPayload.pedido_id,
-            html:document.getElementById("kitchenTicket").innerHTML,
-            copias:1
+            html:`<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  @page{
+    size:80mm auto;
+    margin:0;
+  }
+  *{
+    box-sizing:border-box;
+  }
+  html,body{
+    margin:0;
+    padding:0;
+    width:80mm;
+    background:#fff;
+    color:#000;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  body{
+    padding:4mm 5mm 5mm;
+    font-size:18px;
+    line-height:1.28;
+    font-weight:600;
+  }
+  h1,h2,h3{
+    margin:3px 0;
+    text-align:center;
+    font-weight:900;
+    line-height:1.15;
+  }
+  h1{font-size:24px}
+  h2{font-size:22px}
+  h3{font-size:20px}
+  strong,b{font-weight:900}
+  hr{
+    border:0;
+    border-top:2px dashed #000;
+    margin:9px 0;
+  }
+  .ticket,.kitchen-ticket{
+    display:block!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    background:#fff!important;
+  }
+</style>
+</head>
+<body>
+${document.getElementById("kitchenTicket").innerHTML}
+</body>
+</html>`
           })
         });
 
@@ -984,11 +1037,7 @@
           throw new Error(result.error || result.mensaje || "No se pudo imprimir");
         }
 
-        if(result.duplicado){
-          if(showStatus) setPrintStatus("La comanda ya había sido enviada; no se imprimió de nuevo.",true);
-        }else{
-          if(showStatus) setPrintStatus("Comanda enviada e impresa en cocina.",true);
-        }
+        if(showStatus) setPrintStatus("Comanda enviada e impresa en cocina.",true);
         return true;
       }catch(error){
         if(showStatus) setPrintStatus(`Error de impresión: ${error.message}`);
