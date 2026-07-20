@@ -765,6 +765,8 @@
     let cart = JSON.parse(localStorage.getItem("noriDemoCart") || "[]");
     let lastDeliveryMessage = "";
     let lastOrderPayload = null;
+    let pedidoFinalizado = false;
+    let checkoutFormOriginal = "";
 
     // Se configurará al conectar el servidor real.
     const OPENWA_ENDPOINT = "http://127.0.0.1:5000/enviar-moto-envio";
@@ -891,11 +893,31 @@
         <button class="checkout" onclick="openCheckout()">Continuar pedido</button>`;
     }
 
+    function resetCheckoutForNewOrder(){
+      const content = document.getElementById("checkoutContent");
+
+      if(checkoutFormOriginal){
+        content.innerHTML = checkoutFormOriginal;
+      }
+
+      pedidoFinalizado = false;
+      lastDeliveryMessage = "";
+      lastOrderPayload = null;
+
+      const changeField = document.getElementById("changeField");
+      if(changeField) changeField.classList.add("hidden");
+    }
+
     function openCheckout(){
       if(!cart.length){
         document.getElementById("menu").scrollIntoView({behavior:"smooth"});
         return;
       }
+
+      if(pedidoFinalizado){
+        resetCheckoutForNewOrder();
+      }
+
       document.getElementById("checkoutOverlay").classList.remove("hidden");
       document.body.style.overflow="hidden";
     }
@@ -903,6 +925,10 @@
     function closeCheckout(){
       document.getElementById("checkoutOverlay").classList.add("hidden");
       document.body.style.overflow="";
+
+      if(pedidoFinalizado){
+        resetCheckoutForNewOrder();
+      }
     }
 
     function scrollToCart(){
@@ -915,12 +941,38 @@
     }
 
     function generateOrderNumber(){
-      const now=new Date();
-      const dateKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-      const saved=JSON.parse(localStorage.getItem("noriOrderSequence")||"{}");
-      const next=saved.date===dateKey ? saved.value+1 : 1;
-      localStorage.setItem("noriOrderSequence",JSON.stringify({date:dateKey,value:next}));
-      return `SUSHI-${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${String(next).padStart(3,"0")}`;
+      const now = new Date();
+
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hour = String(now.getHours()).padStart(2, "0");
+      const minute = String(now.getMinutes()).padStart(2, "0");
+      const second = String(now.getSeconds()).padStart(2, "0");
+
+      let randomPart = "";
+
+      if(window.crypto && typeof window.crypto.randomUUID === "function"){
+        randomPart = window.crypto
+          .randomUUID()
+          .replaceAll("-", "")
+          .slice(0, 8)
+          .toUpperCase();
+      }else if(window.crypto && typeof window.crypto.getRandomValues === "function"){
+        const values = new Uint32Array(2);
+        window.crypto.getRandomValues(values);
+        randomPart = Array.from(values)
+          .map(value => value.toString(16).padStart(8, "0"))
+          .join("")
+          .slice(0, 8)
+          .toUpperCase();
+      }else{
+        randomPart = (
+          Math.random().toString(36).slice(2, 6) +
+          Date.now().toString(36).slice(-4)
+        ).toUpperCase();
+      }
+
+      return `SUSHI-${month}${day}-${hour}${minute}${second}-${randomPart}`;
     }
 
     function buildKitchenTicket(order,customerNotes){
@@ -1190,6 +1242,7 @@ Favor de confirmar quién toma el envío.`;
         }
       };
 
+      pedidoFinalizado = true;
       document.getElementById("kitchenTicket").innerHTML=kitchenHtml;
       document.getElementById("checkoutContent").innerHTML=`
         <div class="success">
@@ -1219,7 +1272,7 @@ Favor de confirmar quién toma el envío.`;
           </div>
         </div>`;
 
-      // Envío automático al servidor Flask de la cocina.
+      // Envío automático a la cola de impresión en Supabase.
       setTimeout(()=>sendKitchenToQueue(true),250);
 
       cart=[];
@@ -1228,13 +1281,17 @@ Favor de confirmar quién toma el envío.`;
 
     function finishDemo(){
       closeCheckout();
-      location.reload();
+      document.getElementById("menu").scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
     }
 
     document.getElementById("checkoutOverlay").addEventListener("click",e=>{
       if(e.target.id==="checkoutOverlay") closeCheckout();
     });
 
+    checkoutFormOriginal = document.getElementById("checkoutContent").innerHTML;
     renderProducts();
     renderCart();
   </script>
