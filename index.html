@@ -969,7 +969,7 @@
       try{
         if(showStatus) setPrintStatus("Enviando comanda a cocina...");
 
-        const response=await fetch(`${PRINT_SERVER_URL}/imprimir-sushi`,{
+        const response=await fetch(`${PRINT_SERVER_URL}/imprimir`,{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body:JSON.stringify({
@@ -1037,7 +1037,7 @@ ${document.getElementById("kitchenTicket").innerHTML}
           throw new Error(result.error || result.mensaje || "No se pudo imprimir");
         }
 
-        if(showStatus) setPrintStatus("Comanda enviada e impresa en cocina.",true);
+        if(showStatus) setPrintStatus("Comanda enviada al servidor de impresión.",true);
         return true;
       }catch(error){
         if(showStatus) setPrintStatus(`Error de impresión: ${error.message}`);
