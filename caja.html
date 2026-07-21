@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel de Caja — Nori House Sushi</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#f3f4f6;--panel:#fff;--ink:#171717;--muted:#6b7280;--line:#e5e7eb;
+  --blue:#2563eb;--yellow:#d97706;--green:#15803d;--red:#b91c1c;--dark:#111827;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{
+  position:sticky;top:0;z-index:30;background:#111;color:#fff;padding:14px 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 3px 14px rgba(0,0,0,.2)
+}
+header h1{margin:0;font-size:22px}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{border:0;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btn-dark{background:#111;color:#fff}
+.btn-light{background:#fff;color:#111}
+.btn-green{background:var(--green);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-yellow{background:#f59e0b;color:#111}
+.btn-red{background:var(--red);color:#fff}
+.btn-soft{background:#eef2f7;color:#111}
+main{padding:16px;max-width:1800px;margin:auto}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px;margin-bottom:14px}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 5px 20px rgba(0,0,0,.05)}
+.metric .label{color:var(--muted);font-size:13px;font-weight:700}
+.metric .value{font-size:30px;font-weight:950;margin-top:3px}
+.toolbar{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toolbar input,.toolbar select{padding:11px 12px;border:1px solid #cfd4da;border-radius:11px;font-size:15px}
+.toolbar input{min-width:260px;flex:1}
+.status{padding:10px 12px;border-radius:11px;background:#fff4df;color:#8a4b00;font-weight:800}
+.status.ok{background:#e7f5ed;color:#12663e}
+.status.bad{background:#fdecea;color:#9f1d17}
+.board{display:grid;grid-template-columns:repeat(4,minmax(270px,1fr));gap:12px;align-items:start}
+.column{background:#e9edf2;border-radius:18px;padding:10px;min-height:420px}
+.column-head{display:flex;justify-content:space-between;align-items:center;padding:6px 4px 11px;font-weight:950}
+.column-head .count{background:#fff;padding:3px 8px;border-radius:999px;font-size:13px}
+.cards{display:flex;flex-direction:column;gap:10px}
+.order-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;box-shadow:0 5px 15px rgba(0,0,0,.05);cursor:pointer}
+.order-card:hover{transform:translateY(-1px)}
+.order-card.urgent{border:2px solid var(--red)}
+.order-card.warning{border:2px solid #f59e0b}
+.card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.order-id{font-weight:950;font-size:15px;overflow-wrap:anywhere}
+.timer{font-size:22px;font-weight:950;white-space:nowrap}
+.timer.ok{color:var(--green)} .timer.warn{color:#c26b00} .timer.bad{color:var(--red)}
+.customer{margin-top:8px;font-weight:800}
+.address,.small{font-size:13px;color:var(--muted);margin-top:3px}
+.amount{font-size:21px;font-weight:950;margin-top:8px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge{font-size:12px;font-weight:850;border-radius:999px;padding:4px 8px;background:#eef2f7}
+.badge.pay-ok{background:#e7f5ed;color:#12663e}
+.badge.pay-pending{background:#fff4df;color:#8a4b00}
+.card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.card-actions button{padding:8px 10px;font-size:12px}
+.empty{padding:24px 8px;text-align:center;color:var(--muted)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:80;display:none}
+.overlay.open{display:block}
+.drawer{
+  position:fixed;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;z-index:90;
+  transform:translateX(100%);transition:.2s ease;box-shadow:-10px 0 35px rgba(0,0,0,.2);overflow:auto
+}
+.drawer.open{transform:translateX(0)}
+.drawer-head{position:sticky;top:0;background:#111;color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+.drawer-body{padding:18px}
+.detail-section{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:14px}
+.detail-section h3{margin:0 0 8px;font-size:16px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-box{background:#f6f7f9;border-radius:12px;padding:11px}
+.detail-box .k{font-size:12px;color:var(--muted);font-weight:700}
+.detail-box .v{font-weight:850;margin-top:3px;overflow-wrap:anywhere}
+textarea,input[type=text]{width:100%;border:1px solid #cfd4da;border-radius:11px;padding:11px;font:inherit}
+.drawer-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.history{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+.history table{width:100%;border-collapse:collapse;font-size:13px}
+.history th,.history td{text-align:left;border-bottom:1px solid var(--line);padding:9px}
+.hidden{display:none!important}
+@media(max-width:1200px){.board{grid-template-columns:repeat(2,minmax(280px,1fr))}}
+@media(max-width:760px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .board{grid-template-columns:1fr}
+  .detail-grid,.drawer-actions{grid-template-columns:1fr}
+  header{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Panel de Caja — Nori House Sushi</h1>
+    <div style="font-size:12px;color:#cbd5e1">Monitoreo, transferencias y cierre de órdenes</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-light" onclick="toggleSonido()" id="btnSonido">🔔 Sonido activado</button>
+    <button class="btn-light" onclick="cargarPedidos()">Actualizar</button>
+  </div>
+</header>
+
+<main>
+  <section class="metrics">
+    <div class="metric"><div class="label">Pedidos activos</div><div class="value" id="mActivos">0</div></div>
+    <div class="metric"><div class="label">Tiempo promedio</div><div class="value" id="mPromedio">0 min</div></div>
+    <div class="metric"><div class="label">Listos / reparto</div><div class="value" id="mListos">0</div></div>
+    <div class="metric"><div class="label">Transferencias pendientes</div><div class="value" id="mPagos">0</div></div>
+  </section>
+
+  <section class="toolbar">
+    <input id="buscar" type="search" placeholder="Buscar por orden, cliente, teléfono o dirección..." oninput="render()">
+    <select id="filtroPago" onchange="render()">
+      <option value="">Todos los pagos</option>
+      <option value="pendiente">Transferencia pendiente</option>
+      <option value="transferencia_reportada">Transferencia reportada</option>
+      <option value="transferencia_confirmada">Transferencia confirmada</option>
+      <option value="rechazada">Transferencia rechazada</option>
+    </select>
+    <label><input type="checkbox" id="mostrarCerrados" onchange="render()"> Mostrar historial</label>
+    <div id="estado" class="status">Conectando...</div>
+  </section>
+
+  <section class="board">
+    <div class="column">
+      <div class="column-head"><span>🟦 Nuevos</span><span class="count" id="countNuevos">0</span></div>
+      <div class="cards" id="colNuevos"></div>
+    </div>
+    <div class="column">
+      <div class="column-head"><span>🟨 En preparación</span><span class="count" id="countPreparando">0</span></div>
+      <div class="cards" id="colPreparando"></div>
+    </div>
+    <div class="column">
+      <div class="column-head"><span>🟩 Listos / reparto</span><span class="count" id="countListos">0</span></div>
+      <div class="cards" id="colListos"></div>
+    </div>
+    <div class="column">
+      <div class="column-head"><span>⬛ Entregados</span><span class="count" id="countEntregados">0</span></div>
+      <div class="cards" id="colEntregados"></div>
+    </div>
+  </section>
+
+  <section class="history hidden" id="historial">
+    <h2 style="margin-top:0">Historial de órdenes cerradas</h2>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr><th>Orden</th><th>Cliente</th><th>Total</th><th>Pago</th><th>Cierre</th></tr></thead>
+        <tbody id="tablaHistorial"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay" onclick="cerrarDetalle()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <strong id="dPedido">Detalle</strong>
+    <button class="btn-light" onclick="cerrarDetalle()">Cerrar</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<script>
+const SUPABASE_URL="https://rcegikeiaxptolrduguc.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InJjZWdpa2VpYXhwdG9scmR1Z3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTMyMDcsImV4cCI6MjA3MTIyOTIwN30.jbPM9F977zeITEmFA_xvVU6SCxlWWVCi3Dx7ZhFfTp8";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+let pedidos=[];
+let pedidosConocidos=new Set();
+let pedidoSeleccionado=null;
+let sonidoActivo=true;
+let primeraCarga=true;
+let temporizador=null;
+
+const ESTADOS={
+  nuevo:"Nuevo",
+  aceptado:"Aceptado",
+  en_preparacion:"En preparación",
+  listo:"Listo",
+  esperando_repartidor:"Esperando repartidor",
+  en_reparto:"En reparto",
+  entregado:"Entregado",
+  cerrado:"Cerrado",
+  cancelado:"Cancelado"
+};
+const PAGOS={
+  pendiente:"Pendiente",
+  transferencia_reportada:"Transferencia reportada",
+  transferencia_confirmada:"Transferencia confirmada",
+  rechazada:"Rechazada"
+};
+
+function esc(v){
+  return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+function dinero(v){return Number(v||0).toLocaleString("es-MX",{style:"currency",currency:"MXN"});}
+function fecha(v){if(!v)return "—";return new Date(v).toLocaleString("es-MX");}
+function minutosDesde(v){if(!v)return 0;return Math.max(0,Math.floor((Date.now()-new Date(v).getTime())/60000));}
+function claseTiempo(min){return min>=35?"bad":min>=20?"warn":"ok";}
+function setEstado(t,tipo=""){const el=document.getElementById("estado");el.textContent=t;el.className=`status ${tipo}`;}
+
+function tocarAlerta(){
+  if(!sonidoActivo)return;
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(); const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.frequency.value=880;gain.gain.value=.13;osc.start();
+    setTimeout(()=>{osc.stop();ctx.close();},230);
+  }catch(e){}
+}
+function toggleSonido(){
+  sonidoActivo=!sonidoActivo;
+  document.getElementById("btnSonido").textContent=sonidoActivo?"🔔 Sonido activado":"🔕 Sonido apagado";
+}
+
+function obtenerDatosDesdeMensaje(row){
+  const msg=String(row.mensaje_whatsapp||"");
+  const get=(label,nextLabels)=>{
+    const start=msg.indexOf(label);
+    if(start<0)return "";
+    let part=msg.slice(start+label.length).trim();
+    let end=part.length;
+    for(const n of nextLabels){const i=part.indexOf(n);if(i>=0&&i<end)end=i;}
+    return part.slice(0,end).trim();
+  };
+  return {
+    cliente: row.cliente_nombre && row.cliente_nombre!=="Sin nombre" ? row.cliente_nombre : get("👤 Cliente:",["📞","🏠","📝","🛍️","💳","💰","📌"]),
+    telefono: row.cliente_telefono || get("📞 Teléfono:",["🏠","📝","🛍️","💳","💰","📌"]),
+    direccion: row.direccion || get("🏠 Dirección:",["📝","🛍️","💳","💰","📌"]),
+    referencias: row.referencias || get("📝 Referencias:",["🛍️","💳","💰","📌"]),
+    pedidoTexto: get("🛍️ Pedido:",["💳","💰","📌"]),
+    metodo: row.metodo_pago || get("💳 Método de pago:",["💰","📌"]),
+    totalTexto: get("💰 Total a cobrar:",["📌"]),
+    indicaciones: row.notas || get("📌 Indicaciones:",["Favor de confirmar"])
+  };
+}
+
+function productosHTML(row){
+  try{
+    const p=typeof row.productos==="string"?JSON.parse(row.productos):row.productos;
+    if(Array.isArray(p)&&p.length){
+      return `<ul>${p.map(x=>`<li>${esc(x.cantidad??x.qty??1)} × ${esc(x.nombre??x.producto??x.name??"Producto")}</li>`).join("")}</ul>`;
+    }
+  }catch(e){}
+  const d=obtenerDatosDesdeMensaje(row);
+  return `<div style="white-space:pre-line">${esc(d.pedidoTexto||"Sin detalle disponible")}</div>`;
+}
+
+function columnaDe(row){
+  const e=row.estado_pedido||"nuevo";
+  if(["nuevo","aceptado"].includes(e))return "nuevos";
+  if(["en_preparacion"].includes(e))return "preparando";
+  if(["listo","esperando_repartidor","en_reparto"].includes(e))return "listos";
+  if(["entregado"].includes(e))return "entregados";
+  return "otros";
+}
+
+function tarjeta(row){
+  const d=obtenerDatosDesdeMensaje(row);
+  const min=minutosDesde(row.created_at);
+  const tcl=claseTiempo(min);
+  const pcl=row.estado_pago==="transferencia_confirmada"?"pay-ok":"pay-pending";
+  const pago=PAGOS[row.estado_pago||"pendiente"]||row.estado_pago||"Pendiente";
+  const estado=ESTADOS[row.estado_pedido||"nuevo"]||row.estado_pedido;
+  return `
+    <article class="order-card ${tcl==="bad"?"urgent":tcl==="warn"?"warning":""}" onclick="abrirDetalle(${row.id})">
+      <div class="card-top">
+        <div class="order-id">${esc(row.pedido_id||row.folio||row.id)}</div>
+        <div class="timer ${tcl}">${min} min</div>
+      </div>
+      <div class="customer">${esc(d.cliente||"Cliente sin nombre")}</div>
+      <div class="address">${esc((d.direccion||"Sin dirección").split("\n")[0])}</div>
+      <div class="amount">${dinero(row.total)}</div>
+      <div class="badges">
+        <span class="badge">${esc(estado)}</span>
+        <span class="badge ${pcl}">${esc(pago)}</span>
+        <span class="badge">${esc(row.estado_whatsapp||"WhatsApp pendiente")}</span>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        ${botonesRapidos(row)}
+      </div>
+    </article>`;
+}
+
+function botonesRapidos(row){
+  const e=row.estado_pedido||"nuevo";
+  let b=[];
+  if(["nuevo","aceptado"].includes(e)) b.push(`<button class="btn-yellow" onclick="cambiarEstado(${row.id},'en_preparacion')">Iniciar preparación</button>`);
+  if(e==="en_preparacion") b.push(`<button class="btn-green" onclick="cambiarEstado(${row.id},'listo')">Marcar listo</button>`);
+  if(e==="listo") b.push(`<button class="btn-blue" onclick="cambiarEstado(${row.id},'esperando_repartidor')">Esperando repartidor</button>`);
+  if(e==="esperando_repartidor") b.push(`<button class="btn-blue" onclick="cambiarEstado(${row.id},'en_reparto')">En reparto</button>`);
+  if(e==="en_reparto") b.push(`<button class="btn-green" onclick="cambiarEstado(${row.id},'entregado')">Entregado</button>`);
+  if(e==="entregado" && row.estado_pago==="transferencia_confirmada") b.push(`<button class="btn-dark" onclick="cerrarPedido(${row.id})">Cerrar</button>`);
+  return b.join("");
+}
+
+function filtrar(){
+  const q=document.getElementById("buscar").value.trim().toLowerCase();
+  const fp=document.getElementById("filtroPago").value;
+  return pedidos.filter(r=>{
+    if(fp && (r.estado_pago||"pendiente")!==fp)return false;
+    if(!q)return true;
+    const d=obtenerDatosDesdeMensaje(r);
+    return [r.pedido_id,r.folio,d.cliente,d.telefono,d.direccion].join(" ").toLowerCase().includes(q);
+  });
+}
+
+function render(){
+  const rows=filtrar();
+  const grupos={nuevos:[],preparando:[],listos:[],entregados:[]};
+  for(const r of rows){
+    const c=columnaDe(r);
+    if(grupos[c])grupos[c].push(r);
+  }
+  for(const [k,arr] of Object.entries(grupos)){
+    const id="col"+k.charAt(0).toUpperCase()+k.slice(1);
+    document.getElementById(id).innerHTML=arr.length?arr.map(tarjeta).join(""):`<div class="empty">Sin pedidos</div>`;
+  }
+  document.getElementById("countNuevos").textContent=grupos.nuevos.length;
+  document.getElementById("countPreparando").textContent=grupos.preparando.length;
+  document.getElementById("countListos").textContent=grupos.listos.length;
+  document.getElementById("countEntregados").textContent=grupos.entregados.length;
+
+  const activos=pedidos.filter(r=>!["cerrado","cancelado"].includes(r.estado_pedido||"nuevo"));
+  const prom=activos.length?Math.round(activos.reduce((a,r)=>a+minutosDesde(r.created_at),0)/activos.length):0;
+  document.getElementById("mActivos").textContent=activos.length;
+  document.getElementById("mPromedio").textContent=prom+" min";
+  document.getElementById("mListos").textContent=pedidos.filter(r=>["listo","esperando_repartidor","en_reparto"].includes(r.estado_pedido)).length;
+  document.getElementById("mPagos").textContent=pedidos.filter(r=>!["cerrado","cancelado"].includes(r.estado_pedido||"nuevo") && r.estado_pago!=="transferencia_confirmada").length;
+
+  const verHist=document.getElementById("mostrarCerrados").checked;
+  document.getElementById("historial").classList.toggle("hidden",!verHist);
+  if(verHist){
+    const cerrados=pedidos.filter(r=>["cerrado","cancelado"].includes(r.estado_pedido));
+    document.getElementById("tablaHistorial").innerHTML=cerrados.map(r=>{
+      const d=obtenerDatosDesdeMensaje(r);
+      return `<tr onclick="abrirDetalle(${r.id})" style="cursor:pointer"><td>${esc(r.pedido_id)}</td><td>${esc(d.cliente)}</td><td>${dinero(r.total)}</td><td>${esc(PAGOS[r.estado_pago]||r.estado_pago)}</td><td>${fecha(r.cerrado_at||r.updated_at)}</td></tr>`;
+    }).join("");
+  }
+}
+
+async function cargarPedidos(){
+  setEstado("Actualizando...");
+  const {data,error}=await supabaseClient.from("comandas_sushi").select("*").order("created_at",{ascending:false}).limit(250);
+  if(error){setEstado("Error: "+error.message,"bad");return;}
+  pedidos=data||[];
+  const idsNuevos=pedidos.filter(r=>(r.estado_pedido||"nuevo")==="nuevo").map(r=>String(r.id));
+  if(!primeraCarga){
+    const hayNuevo=idsNuevos.some(id=>!pedidosConocidos.has(id));
+    if(hayNuevo)tocarAlerta();
+  }
+  pedidosConocidos=new Set(pedidos.map(r=>String(r.id)));
+  primeraCarga=false;
+  setEstado("Conectado. Última actualización: "+new Date().toLocaleTimeString("es-MX"),"ok");
+  render();
+  if(pedidoSeleccionado){
+    pedidoSeleccionado=pedidos.find(r=>r.id===pedidoSeleccionado.id)||null;
+    if(pedidoSeleccionado)renderDetalle();
+  }
+}
+
+async function actualizar(id,cambios){
+  const {error}=await supabaseClient.from("comandas_sushi").update(cambios).eq("id",id);
+  if(error){alert("No se pudo actualizar: "+error.message);return false;}
+  await cargarPedidos();return true;
+}
+
+async function cambiarEstado(id,estado){
+  const cambios={estado_pedido:estado,atendido_por:"Caja"};
+  const ahora=new Date().toISOString();
+  if(estado==="listo")cambios.listo_at=ahora;
+  if(estado==="entregado")cambios.entregado_at=ahora;
+  await actualizar(id,cambios);
+}
+
+async function confirmarTransferencia(id){
+  const ref=document.getElementById("refTransferencia")?.value.trim()||"";
+  await actualizar(id,{
+    estado_pago:"transferencia_confirmada",
+    referencia_transferencia:ref||null,
+    pago_confirmado_por:"Caja",
+    pago_confirmado_at:new Date().toISOString()
+  });
+}
+
+async function marcarReportada(id){
+  const ref=document.getElementById("refTransferencia")?.value.trim()||"";
+  await actualizar(id,{estado_pago:"transferencia_reportada",referencia_transferencia:ref||null});
+}
+
+async function rechazarTransferencia(id){
+  await actualizar(id,{estado_pago:"rechazada",pago_confirmado_por:null,pago_confirmado_at:null});
+}
+
+async function guardarObservaciones(id){
+  const obs=document.getElementById("obsCaja").value;
+  await actualizar(id,{caja_observaciones:obs});
+}
+
+async function cerrarPedido(id){
+  const row=pedidos.find(r=>r.id===id);
+  if(!row)return;
+  if(row.estado_pago!=="transferencia_confirmada"){alert("Primero confirma la transferencia.");return;}
+  if(row.estado_pedido!=="entregado"){alert("El pedido debe estar entregado antes de cerrarlo.");return;}
+  await actualizar(id,{estado_pedido:"cerrado",cerrado_at:new Date().toISOString()});
+  cerrarDetalle();
+}
+
+function abrirDetalle(id){
+  pedidoSeleccionado=pedidos.find(r=>r.id===id);
+  if(!pedidoSeleccionado)return;
+  renderDetalle();
+  document.getElementById("overlay").classList.add("open");
+  document.getElementById("drawer").classList.add("open");
+}
+function cerrarDetalle(){
+  document.getElementById("overlay").classList.remove("open");
+  document.getElementById("drawer").classList.remove("open");
+}
+function renderDetalle(){
+  const r=pedidoSeleccionado;if(!r)return;
+  const d=obtenerDatosDesdeMensaje(r);
+  document.getElementById("dPedido").textContent=r.pedido_id||"Detalle";
+  const puedeCerrar=r.estado_pedido==="entregado"&&r.estado_pago==="transferencia_confirmada";
+  document.getElementById("drawerBody").innerHTML=`
+    <div class="detail-section">
+      <div class="detail-grid">
+        <div class="detail-box"><div class="k">Cliente</div><div class="v">${esc(d.cliente||"Sin nombre")}</div></div>
+        <div class="detail-box"><div class="k">Teléfono</div><div class="v">${esc(d.telefono||"—")}</div></div>
+        <div class="detail-box"><div class="k">Total</div><div class="v">${dinero(r.total)}</div></div>
+        <div class="detail-box"><div class="k">Tiempo activo</div><div class="v">${minutosDesde(r.created_at)} min</div></div>
+        <div class="detail-box"><div class="k">Estado del pedido</div><div class="v">${esc(ESTADOS[r.estado_pedido||"nuevo"]||r.estado_pedido)}</div></div>
+        <div class="detail-box"><div class="k">Transferencia</div><div class="v">${esc(PAGOS[r.estado_pago||"pendiente"]||r.estado_pago)}</div></div>
+      </div>
+    </div>
+    <div class="detail-section"><h3>Dirección</h3><div style="white-space:pre-line">${esc(d.direccion||"Sin dirección")}</div><div class="small" style="white-space:pre-line">${esc(d.referencias||"")}</div></div>
+    <div class="detail-section"><h3>Productos</h3>${productosHTML(r)}</div>
+    <div class="detail-section"><h3>Indicaciones</h3><div style="white-space:pre-line">${esc(d.indicaciones||"Sin indicaciones")}</div></div>
+    <div class="detail-section">
+      <h3>Control de transferencia</h3>
+      <input id="refTransferencia" type="text" placeholder="Referencia o últimos dígitos de la transferencia" value="${esc(r.referencia_transferencia||"")}">
+      <div class="card-actions">
+        <button class="btn-yellow" onclick="marcarReportada(${r.id})">Marcar reportada</button>
+        <button class="btn-green" onclick="confirmarTransferencia(${r.id})">Confirmar transferencia</button>
+        <button class="btn-red" onclick="rechazarTransferencia(${r.id})">Rechazar</button>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h3>Observaciones de caja</h3>
+      <textarea id="obsCaja" rows="3">${esc(r.caja_observaciones||"")}</textarea>
+      <div class="card-actions"><button class="btn-soft" onclick="guardarObservaciones(${r.id})">Guardar observaciones</button></div>
+    </div>
+    <div class="detail-section">
+      <h3>Avanzar pedido</h3>
+      <div class="drawer-actions">
+        <button class="btn-yellow" onclick="cambiarEstado(${r.id},'en_preparacion')">En preparación</button>
+        <button class="btn-green" onclick="cambiarEstado(${r.id},'listo')">Listo</button>
+        <button class="btn-blue" onclick="cambiarEstado(${r.id},'esperando_repartidor')">Esperando repartidor</button>
+        <button class="btn-blue" onclick="cambiarEstado(${r.id},'en_reparto')">En reparto</button>
+        <button class="btn-green" onclick="cambiarEstado(${r.id},'entregado')">Entregado</button>
+        <button class="btn-dark" ${puedeCerrar?"":"disabled"} onclick="cerrarPedido(${r.id})">Cerrar cuenta</button>
+      </div>
+      ${puedeCerrar?"":`<p class="small">Para cerrar: transferencia confirmada y pedido entregado.</p>`}
+    </div>
+    <div class="detail-section">
+      <h3>Estado técnico</h3>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="k">Impresión</div><div class="v">${esc(r.estado||"—")}</div></div>
+        <div class="detail-box"><div class="k">WhatsApp</div><div class="v">${esc(r.estado_whatsapp||"—")}</div></div>
+        <div class="detail-box"><div class="k">Creado</div><div class="v">${fecha(r.created_at)}</div></div>
+        <div class="detail-box"><div class="k">Actualizado</div><div class="v">${fecha(r.updated_at)}</div></div>
+      </div>
+    </div>`;
+}
+
+cargarPedidos();
+temporizador=setInterval(cargarPedidos,3000);
+setInterval(render,30000);
+</script>
+</body>
+</html>
