@@ -35,7 +35,7 @@ main{padding:16px;max-width:1800px;margin:auto}
 .toolbar{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .toolbar input,.toolbar select{padding:11px 12px;border:1px solid #cfd4da;border-radius:11px;font-size:15px}
 .toolbar input{min-width:260px;flex:1}
-.status{padding:10px 12px;border-radius:11px;background:#fff4df;color:#8a4b00;font-weight:800}
+.status{padding:10px 12px;border-radius:11px;background:#e7f5ed;color:#12663e;font-weight:800;min-width:120px;text-align:center;white-space:nowrap}
 .status.ok{background:#e7f5ed;color:#12663e}
 .status.bad{background:#fdecea;color:#9f1d17}
 .board{display:grid;grid-template-columns:repeat(4,minmax(270px,1fr));gap:12px;align-items:start}
@@ -99,7 +99,7 @@ textarea,input[type=text]{width:100%;border:1px solid #cfd4da;border-radius:11px
   </div>
   <div class="header-actions">
     <button class="btn-light" onclick="toggleSonido()" id="btnSonido">🔔 Sonido activado</button>
-    <button class="btn-light" onclick="cargarPedidos()">Actualizar</button>
+    <button class="btn-light" onclick="cargarPedidos({manual:true})">Actualizar</button>
   </div>
 </header>
 
@@ -121,7 +121,7 @@ textarea,input[type=text]{width:100%;border:1px solid #cfd4da;border-radius:11px
       <option value="rechazada">Transferencia rechazada</option>
     </select>
     <label><input type="checkbox" id="mostrarCerrados" onchange="render()"> Mostrar historial</label>
-    <div id="estado" class="status">Conectando...</div>
+    <div id="estado" class="status">Conectando</div>
   </section>
 
   <section class="board">
@@ -174,6 +174,8 @@ let pedidoSeleccionado=null;
 let sonidoActivo=true;
 let primeraCarga=true;
 let temporizador=null;
+let firmaDatos="";
+let cargando=false;
 
 const ESTADOS={
   nuevo:"Nuevo",
@@ -270,7 +272,7 @@ function tarjeta(row){
     <article class="order-card ${tcl==="bad"?"urgent":tcl==="warn"?"warning":""}" onclick="abrirDetalle(${row.id})">
       <div class="card-top">
         <div class="order-id">${esc(row.pedido_id||row.folio||row.id)}</div>
-        <div class="timer ${tcl}">${min} min</div>
+        <div class="timer ${tcl}" data-created="${esc(row.created_at||'')}">${min} min</div>
       </div>
       <div class="customer">${esc(d.cliente||"Cliente sin nombre")}</div>
       <div class="address">${esc((d.direccion||"Sin dirección").split("\n")[0])}</div>
@@ -343,24 +345,67 @@ function render(){
   }
 }
 
-async function cargarPedidos(){
-  setEstado("Actualizando...");
-  const {data,error}=await supabaseClient.from("comandas_sushi").select("*").order("created_at",{ascending:false}).limit(250);
-  if(error){setEstado("Error: "+error.message,"bad");return;}
-  pedidos=data||[];
-  const idsNuevos=pedidos.filter(r=>(r.estado_pedido||"nuevo")==="nuevo").map(r=>String(r.id));
-  if(!primeraCarga){
-    const hayNuevo=idsNuevos.some(id=>!pedidosConocidos.has(id));
-    if(hayNuevo)tocarAlerta();
+async function cargarPedidos(opciones={}){
+  if(cargando)return;
+  cargando=true;
+  const manual=Boolean(opciones.manual);
+  try{
+    const {data,error}=await supabaseClient.from("comandas_sushi").select("*").order("created_at",{ascending:false}).limit(250);
+    if(error){
+      setEstado("Sin conexión","bad");
+      console.error("Error al actualizar pedidos:",error);
+      return;
+    }
+
+    const nuevosDatos=data||[];
+    const nuevaFirma=JSON.stringify(nuevosDatos.map(r=>[
+      r.id,r.updated_at,r.estado_pedido,r.estado_pago,r.estado,r.estado_whatsapp,
+      r.referencia_transferencia,r.caja_observaciones
+    ]));
+    const cambioReal=nuevaFirma!==firmaDatos;
+
+    const idsNuevos=nuevosDatos.filter(r=>(r.estado_pedido||"nuevo")==="nuevo").map(r=>String(r.id));
+    if(!primeraCarga && idsNuevos.some(id=>!pedidosConocidos.has(id))) tocarAlerta();
+
+    pedidos=nuevosDatos;
+    pedidosConocidos=new Set(pedidos.map(r=>String(r.id)));
+    primeraCarga=false;
+    setEstado("Conectado","ok");
+
+    if(cambioReal || manual){
+      firmaDatos=nuevaFirma;
+      const scrollActual=window.scrollY;
+      render();
+      requestAnimationFrame(()=>window.scrollTo({top:scrollActual,behavior:"auto"}));
+
+      // No reconstruimos el panel lateral automáticamente para no quitar
+      // el foco mientras la persona escribe una referencia u observación.
+      if(pedidoSeleccionado){
+        const actualizado=pedidos.find(r=>r.id===pedidoSeleccionado.id);
+        if(actualizado) pedidoSeleccionado=actualizado;
+      }
+    }else{
+      actualizarTemporizadores();
+    }
+  }finally{
+    cargando=false;
   }
-  pedidosConocidos=new Set(pedidos.map(r=>String(r.id)));
-  primeraCarga=false;
-  setEstado("Conectado. Última actualización: "+new Date().toLocaleTimeString("es-MX"),"ok");
-  render();
-  if(pedidoSeleccionado){
-    pedidoSeleccionado=pedidos.find(r=>r.id===pedidoSeleccionado.id)||null;
-    if(pedidoSeleccionado)renderDetalle();
-  }
+}
+
+function actualizarTemporizadores(){
+  document.querySelectorAll(".timer[data-created]").forEach(el=>{
+    const creado=el.dataset.created;
+    const min=minutosDesde(creado);
+    const clase=claseTiempo(min);
+    el.textContent=min+" min";
+    el.classList.remove("ok","warn","bad");
+    el.classList.add(clase);
+    const card=el.closest(".order-card");
+    if(card){
+      card.classList.toggle("urgent",clase==="bad");
+      card.classList.toggle("warning",clase==="warn");
+    }
+  });
 }
 
 async function actualizar(id,cambios){
@@ -477,9 +522,9 @@ function renderDetalle(){
     </div>`;
 }
 
-cargarPedidos();
-temporizador=setInterval(cargarPedidos,3000);
-setInterval(render,30000);
+cargarPedidos({manual:true});
+temporizador=setInterval(()=>cargarPedidos(),3000);
+setInterval(actualizarTemporizadores,30000);
 </script>
 </body>
 </html>
