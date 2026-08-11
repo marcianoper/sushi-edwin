@@ -805,7 +805,9 @@
     // Servidor de impresión instalado en la computadora de cocina.
     // Si la página se abre en otro dispositivo, cambia 127.0.0.1 por la IP
     // local de la computadora de cocina, por ejemplo: 192.168.1.50
-   const SUPABASE_URL = "https://rcegikeiaxptolrduguc.supabase.co";
+   const MERCADOPAGO_LINK = "http://link.mercadopago.com.mx/suchinaloa";
+
+const SUPABASE_URL = "https://rcegikeiaxptolrduguc.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZWdpa2VpYXhwdG9scmR1Z3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTMyMDcsImV4cCI6MjA3MTIyOTIwN30.jbPM9F977zeITEmFA_xvVU6SCxlWWVCi3Dx7ZhFfTp8";
 
     const supabaseClient = window.supabase.createClient(
@@ -1232,6 +1234,72 @@ Favor de confirmar quién toma el envío.`;
       }
     }
 
+
+    function openMercadoPago(){
+      window.open(MERCADOPAGO_LINK, "_blank", "noopener,noreferrer");
+      const status = document.getElementById("paymentStatus");
+      if(status){
+        status.textContent = "Mercado Pago se abrió en otra pestaña. Cuando termines el pago, regresa aquí.";
+        status.style.color = "#8a5a00";
+      }
+    }
+
+    async function confirmarPagoManualYEnviar(){
+      const button = document.getElementById("confirmPaidBtn");
+      const status = document.getElementById("paymentStatus");
+
+      if(!lastOrderPayload || !lastOrderPayload.pedido_id){
+        if(status){
+          status.textContent = "No hay un pedido preparado.";
+          status.style.color = "#a81616";
+        }
+        return;
+      }
+
+      const confirmar = confirm(
+        "Confirma únicamente si ya realizaste el pago en Mercado Pago.\n\n" +
+        "Al continuar se enviará la comanda a cocina y el mensaje al grupo."
+      );
+
+      if(!confirmar) return;
+
+      try{
+        if(button){
+          button.disabled = true;
+          button.textContent = "ENVIANDO PEDIDO...";
+        }
+
+        if(status){
+          status.textContent = "Confirmando pedido y enviándolo a cocina...";
+          status.style.color = "#8a5a00";
+        }
+
+        const ok = await sendKitchenToQueue(true);
+
+        if(!ok){
+          throw new Error("No se pudo enviar el pedido a la cola.");
+        }
+
+        if(status){
+          status.textContent = "✓ Pedido enviado a cocina y WhatsApp.";
+          status.style.color = "#167d4d";
+        }
+
+        if(button){
+          button.textContent = "PEDIDO ENVIADO";
+        }
+      }catch(error){
+        if(status){
+          status.textContent = "Error: " + (error?.message || error);
+          status.style.color = "#a81616";
+        }
+        if(button){
+          button.disabled = false;
+          button.textContent = "YA PAGUÉ — ENVIAR PEDIDO";
+        }
+      }
+    }
+
     function submitOrder(event){
       event.preventDefault();
       const formData=new FormData(event.target);
@@ -1268,13 +1336,38 @@ Favor de confirmar quién toma el envío.`;
         <div class="success">
           <div class="success-icon">✓</div>
           <h2>¡Pedido recibido!</h2>
-          <p>La comanda y la solicitud de moto envío quedaron preparadas.</p>
+          <p>Tu pedido está preparado. Realiza el pago antes de enviarlo a cocina.</p>
           <div class="order-number">${order}</div>
+
+          <div style="margin:18px 0;padding:18px;border:1px solid #d7e5dc;border-radius:16px;background:#f4fbf7">
+            <div style="font-size:13px;color:#5b6b60;font-weight:800;margin-bottom:6px">TOTAL DEL PEDIDO</div>
+            <div style="font-size:32px;font-weight:950;margin-bottom:14px">${money(totals.total)}</div>
+
+            <button onclick="openMercadoPago()"
+                    style="width:100%;background:#009ee3;color:#fff;border:0;border-radius:14px;padding:15px;font-weight:950;font-size:16px">
+              PAGAR CON MERCADO PAGO
+            </button>
+
+            <div id="paymentStatus" class="send-status" style="margin-top:12px;color:#8a5a00">
+              El pedido todavía NO se ha enviado a cocina.
+            </div>
+
+            <button id="confirmPaidBtn"
+                    onclick="confirmarPagoManualYEnviar()"
+                    style="width:100%;margin-top:12px;background:#167d4d;color:#fff;border:0;border-radius:14px;padding:15px;font-weight:950;font-size:15px">
+              YA PAGUÉ — ENVIAR PEDIDO
+            </button>
+
+            <div style="font-size:12px;color:#737373;line-height:1.45;margin-top:10px">
+              Prueba temporal: Mercado Pago todavía no confirma el pago automáticamente.
+              Usa el botón verde solamente después de haber realizado el pago.
+            </div>
+          </div>
 
           <div class="kitchen-preview">
             <h3>Vista previa de la comanda de cocina</h3>
             ${kitchenHtml}
-            <div id="printStatus" class="send-status">Preparando envío a la impresora...</div>
+            <div id="printStatus" class="send-status">Esperando confirmación de pago.</div>
           </div>
 
           <div class="delivery-preview">
@@ -1284,17 +1377,13 @@ Favor de confirmar quién toma el envío.`;
           </div>
 
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px">
-            <button onclick="sendKitchenToQueue()">Reintentar envío a cola</button>
-            <button onclick="printKitchenTicket()" style="background:#555">Impresión manual</button>
             <button onclick="copyDeliveryMessage()" style="background:#167d4d">Copiar mensaje</button>
-            <button onclick="sendToOpenWA()" style="background:#075e54">Enviar por OpenWA</button>
-            <button onclick="finishDemo()" style="background:#111">Cerrar demostración</button>
+            <button onclick="finishDemo()" style="background:#111">Cerrar</button>
           </div>
         </div>`;
 
-      // Envío automático a la cola de impresión en Supabase.
-      setTimeout(()=>sendKitchenToQueue(true),250);
-
+      // El pedido queda preparado, pero NO se libera a cocina
+      // hasta que el cliente confirme manualmente que pagó en Mercado Pago.
       cart=[];
       saveCart();
     }
