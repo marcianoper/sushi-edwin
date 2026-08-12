@@ -777,22 +777,20 @@
 
   <script>
     const products = [
-      {id:1,name:"Arroz Frito Gohan",category:"Entradas",price:150,emoji:"🍚",tag:"ENTRADA",desc:"Arroz frito preparado con tocino, queso crema, cebollín, pollo y carne de res; sazonado con soya natural y zanahoria, coronado con tampico y aguacate."},
-      {id:2,name:"Orden Chiles Güeros Rellenos",category:"Entradas",price:135,emoji:"🌶️",tag:"3 PIEZAS",desc:"3 chiles güeros rellenos de tampico y queso crema, empanizados y coronados con salsa de anguila y chipotle."},
-      {id:3,name:"Mar y Tierra",category:"Rollos Empanizados",price:110,emoji:"🍣",tag:"EMPANIZADO",desc:"Rollo empanizado relleno de alga, queso crema, aguacate, camarón y res."},
-      {id:4,name:"Yaquesita",category:"Rollos Empanizados",price:165,emoji:"🧀",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, camarón y surimi; coronado con mozzarella, queso crema, chimichurri, salsa sriracha y ajonjolí."},
-      {id:5,name:"¡Que Chulada!",category:"Rollos Empanizados",price:170,emoji:"🍤",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, pollo y surimi; coronado con queso especial de la casa, tampico y camarones empanizados, bañado en salsa de anguila y ajonjolí."},
-      {id:6,name:"Que Rollo",category:"Rollos Empanizados",price:170,emoji:"🥓",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, pollo y res; coronado con tampico y trozos de tocino frito."},
-      {id:7,name:"Algo-Bien",category:"Rollos Empanizados",price:170,emoji:"🥢",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, surimi y camarón; coronado con tampico, salsa de anguila, chipotle y sriracha."},
-      {id:8,name:"Túmbate el Rollo",category:"Rollos Empanizados",price:195,emoji:"🍗",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, camarón, res y surimi; coronado con tampico y pollo empanizado, bañado en BBQ y ranch con ajonjolí."},
-      {id:9,name:"Rollo Culichi",category:"Rollos Empanizados",price:205,emoji:"🌶️",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, res, pollo y chile güero; coronado con queso especial de la casa, tampico, tocino picado y ajonjolí."},
-      {id:10,name:"Que Chilo",category:"Rollos Empanizados",price:160,emoji:"🍣",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate y camarón; coronado con tampico, tocino, salsa de anguila y aderezo ranch."},
-      {id:11,name:"Machin Roll",category:"Rollo Horneado",price:215,emoji:"🔥",tag:"HORNEADO",desc:"Rollo horneado y empanizado relleno de alga, queso crema, aguacate, tocino, res y camarón; coronado con queso de la casa al horno creando una costra y salsa de anguila."},
-      {id:12,name:"Suchinaloa",category:"El Especial",price:250,emoji:"⭐",tag:"EL ESPECIAL",desc:"Rollo empanizado relleno de alga, queso crema, aguacate, pollo, tocino y surimi. Por fuera: queso crema, res y tocino; tampico; camarones empanizados bañados en salsa chipotle."},
-      {id:13,name:"Avocado Roll",category:"Natural",price:135,emoji:"🥑",tag:"NATURAL",desc:"Rollo natural relleno de alga, queso crema, aguacate y camarón; coronado con tampico."}
-    
-      ,{id:14,name:"Té de Jazmín 1 Litro",category:"Bebidas",price:40,emoji:"🧋",tag:"BEBIDA",desc:"Té de Jazmín, presentación de 1 litro."}
-      ,{id:15,name:"Té de Jazmín 1/2 Litro",category:"Bebidas",price:30,emoji:"🥤",tag:"BEBIDA",desc:"Té de Jazmín, presentación de medio litro."}];
+      {id:1,name:"Arroz Frito Gohan",category:"Entradas",price:85,emoji:"🍚",tag:"ENTRADA",desc:"Arroz frito preparado con tocino, queso crema, cebollín, pollo y carne de res; sazonado con soya natural y zanahoria, coronado con tampico y aguacate."},
+      {id:2,name:"Orden Chiles Güeros Rellenos",category:"Entradas",price:75,emoji:"🌶️",tag:"3 PIEZAS",desc:"3 chiles güeros rellenos de tampico y queso crema, empanizados y coronados con salsa de anguila y chipotle."},
+      {id:3,name:"Mar y Tierra",category:"Rollos Empanizados",price:120,emoji:"🍣",tag:"EMPANIZADO",desc:"Rollo empanizado relleno de alga, queso crema, aguacate, camarón y res."},
+      {id:4,name:"Yaquesita",category:"Rollos Empanizados",price:135,emoji:"🧀",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, camarón y surimi; coronado con mozzarella, queso crema, chimichurri, salsa sriracha y ajonjolí."},
+      {id:5,name:"¡Que Chulada!",category:"Rollos Empanizados",price:150,emoji:"🍤",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, pollo y surimi; coronado con queso especial de la casa, tampico y camarones empanizados, bañado en salsa de anguila y ajonjolí."},
+      {id:6,name:"Que Rollo",category:"Rollos Empanizados",price:135,emoji:"🥓",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, pollo y res; coronado con tampico y trozos de tocino frito."},
+      {id:7,name:"Al-Bien",category:"Rollos Empanizados",price:130,emoji:"🥢",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, surimi y camarón; coronado con tampico, salsa de anguila, chipotle y sriracha."},
+      {id:8,name:"Túmbate el Rollo",category:"Rollos Empanizados",price:150,emoji:"🍗",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, camarón, res y surimi; coronado con tampico y pollo empanizado, bañado en BBQ y ranch con ajonjolí."},
+      {id:9,name:"Rollo Culichi",category:"Rollos Empanizados",price:145,emoji:"🌶️",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate, res, pollo y chile güero; coronado con queso especial de la casa, tampico, tocino picado y ajonjolí."},
+      {id:10,name:"Que Chilo",category:"Rollos Empanizados",price:135,emoji:"🍣",tag:"EMPANIZADO",desc:"Relleno de alga, queso crema, aguacate y camarón; coronado con tampico, tocino, salsa de anguila y aderezo ranch."},
+      {id:11,name:"Machin Roll",category:"Rollo Horneado",price:160,emoji:"🔥",tag:"HORNEADO",desc:"Rollo horneado y empanizado relleno de alga, queso crema, aguacate, tocino, res y camarón; coronado con queso de la casa al horno creando una costra y salsa de anguila."},
+      {id:12,name:"Suchinaloa",category:"El Especial",price:175,emoji:"⭐",tag:"EL ESPECIAL",desc:"Rollo empanizado relleno de alga, queso crema, aguacate, pollo, tocino y surimi. Por fuera: queso crema, res y tocino; tampico; camarones empanizados bañados en salsa chipotle."},
+      {id:13,name:"Avocado Roll",category:"Natural",price:120,emoji:"🥑",tag:"NATURAL",desc:"Rollo natural relleno de alga, queso crema, aguacate y camarón; coronado con tampico."}
+    ];
 
     let cart = JSON.parse(localStorage.getItem("suchinaloaCart") || "[]");
     let lastDeliveryMessage = "";
@@ -808,6 +806,7 @@
     // Si la página se abre en otro dispositivo, cambia 127.0.0.1 por la IP
     // local de la computadora de cocina, por ejemplo: 192.168.1.50
    const MERCADOPAGO_LINK = "http://link.mercadopago.com.mx/suchinaloa";
+const MERCADOPAGO_SERVER_URL = "https://simply-renovator-batting.ngrok-free.dev";
 
 const SUPABASE_URL = "https://rcegikeiaxptolrduguc.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZWdpa2VpYXhwdG9scmR1Z3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NTMyMDcsImV4cCI6MjA3MTIyOTIwN30.jbPM9F977zeITEmFA_xvVU6SCxlWWVCi3Dx7ZhFfTp8";
@@ -1237,72 +1236,146 @@ Favor de confirmar quién toma el envío.`;
     }
 
 
-    function openMercadoPago(){
-      window.open(MERCADOPAGO_LINK, "_blank", "noopener,noreferrer");
-      const status = document.getElementById("paymentStatus");
-      if(status){
-        status.textContent = "Mercado Pago se abrió en otra pestaña. Cuando termines el pago, regresa aquí.";
-        status.style.color = "#8a5a00";
+    let paymentPollTimer = null;
+
+    async function registrarPedidoPendiente(){
+      if(!lastOrderPayload || !lastOrderPayload.pedido_id){
+        throw new Error("No hay un pedido preparado.");
       }
+
+      const ticketHtml = `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  @page{size:80mm auto;margin:0}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;width:80mm;background:#fff;color:#000;font-family:Arial,sans-serif}
+  body{padding:2mm}
+  .ticket,.kitchen-ticket{display:block!important;width:100%!important;margin:0!important;padding:0!important;border:0!important;background:#fff!important}
+</style>
+</head>
+<body>
+${document.getElementById("kitchenTicket").innerHTML}
+</body>
+</html>`;
+
+      const payload = {
+        pedido_id: lastOrderPayload.pedido_id,
+        html: ticketHtml,
+        mensaje_whatsapp: lastDeliveryMessage,
+        estado: "esperando_pago",
+        estado_whatsapp: "esperando_pago",
+        intentos: 0,
+        intentos_whatsapp: 0,
+        error: null,
+        error_whatsapp: null,
+        origen: navigator.userAgent || "desconocido",
+        estado_pago: "pendiente",
+        total_esperado: Number(lastOrderPayload.pago.total || 0)
+      };
+
+      const {error} = await supabaseClient
+        .from("comandas_sushi")
+        .insert(payload);
+
+      if(error && error.code !== "23505") throw error;
+      return true;
     }
 
-    async function confirmarPagoManualYEnviar(){
-      const button = document.getElementById("confirmPaidBtn");
+    async function openMercadoPago(){
       const status = document.getElementById("paymentStatus");
-
-      if(!lastOrderPayload || !lastOrderPayload.pedido_id){
-        if(status){
-          status.textContent = "No hay un pedido preparado.";
-          status.style.color = "#a81616";
-        }
-        return;
-      }
-
-      const confirmar = confirm(
-        "Confirma únicamente si ya realizaste el pago en Mercado Pago.\n\n" +
-        "Al continuar se enviará la comanda a cocina y el mensaje al grupo."
-      );
-
-      if(!confirmar) return;
+      const button = document.getElementById("mercadoPagoBtn");
 
       try{
         if(button){
           button.disabled = true;
-          button.textContent = "ENVIANDO PEDIDO...";
+          button.textContent = "CREANDO PAGO...";
         }
 
         if(status){
-          status.textContent = "Confirmando pedido y enviándolo a cocina...";
+          status.textContent = "Preparando Checkout Pro...";
           status.style.color = "#8a5a00";
         }
 
-        const ok = await sendKitchenToQueue(true);
+        const response = await fetch(`${MERCADOPAGO_SERVER_URL}/crear-preferencia`,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({pedido_id:lastOrderPayload.pedido_id})
+        });
 
-        if(!ok){
-          throw new Error("No se pudo enviar el pedido a la cola.");
+        const result = await response.json().catch(()=>({}));
+        if(!response.ok || !result.ok){
+          throw new Error(result.error || "No se pudo crear el pago.");
         }
+
+        const checkoutUrl = result.sandbox_init_point || result.init_point;
+        if(!checkoutUrl) throw new Error("Mercado Pago no devolvió URL de pago.");
 
         if(status){
-          status.textContent = "✓ Pedido enviado a cocina y WhatsApp.";
-          status.style.color = "#167d4d";
+          status.textContent = "Checkout abierto. Esperando confirmación automática...";
+          status.style.color = "#8a5a00";
         }
 
-        if(button){
-          button.textContent = "PEDIDO ENVIADO";
-        }
+        window.open(checkoutUrl,"_blank","noopener,noreferrer");
+        iniciarMonitoreoPago(lastOrderPayload.pedido_id);
+
       }catch(error){
         if(status){
-          status.textContent = "Error: " + (error?.message || error);
+          status.textContent = `Error al iniciar Mercado Pago: ${error.message}`;
           status.style.color = "#a81616";
         }
-        if(button){
+      }finally{
+        if(button && !button.dataset.pagado){
           button.disabled = false;
-          button.textContent = "YA PAGUÉ — ENVIAR PEDIDO";
+          button.textContent = "PAGAR CON MERCADO PAGO";
         }
       }
     }
 
-    function submitOrder(event){
+    function iniciarMonitoreoPago(pedidoId){
+      if(paymentPollTimer) clearInterval(paymentPollTimer);
+
+      const revisar = async ()=>{
+        try{
+          const {data,error} = await supabaseClient
+            .from("comandas_sushi")
+            .select("pedido_id,estado_pago,mercado_pago_status,mercado_pago_payment_id,pagado_at")
+            .eq("pedido_id",pedidoId)
+            .maybeSingle();
+
+          if(error) throw error;
+          if(!data) return;
+
+          if(data.estado_pago === "pagado" || data.mercado_pago_status === "approved"){
+            clearInterval(paymentPollTimer);
+            paymentPollTimer = null;
+
+            const status = document.getElementById("paymentStatus");
+            const button = document.getElementById("mercadoPagoBtn");
+
+            if(status){
+              status.textContent = "✓ Pago confirmado automáticamente por Mercado Pago.";
+              status.style.color = "#167d4d";
+            }
+
+            if(button){
+              button.dataset.pagado = "1";
+              button.disabled = true;
+              button.textContent = "PAGO CONFIRMADO";
+              button.style.background = "#167d4d";
+            }
+          }
+        }catch(error){
+          console.warn("Estado de pago:",error);
+        }
+      };
+
+      revisar();
+      paymentPollTimer = setInterval(revisar,2500);
+    }
+
+    async function submitOrder(event){
       event.preventDefault();
       const formData=new FormData(event.target);
       const data=Object.fromEntries(formData.entries());
@@ -1334,35 +1407,37 @@ Favor de confirmar quién toma el envío.`;
 
       pedidoFinalizado = true;
       document.getElementById("kitchenTicket").innerHTML=kitchenHtml;
+
+      try{
+        await registrarPedidoPendiente();
+      }catch(error){
+        alert("No se pudo registrar el pedido antes del pago: " + error.message);
+        pedidoFinalizado = false;
+        return;
+      }
+
       document.getElementById("checkoutContent").innerHTML=`
         <div class="success">
           <div class="success-icon">✓</div>
           <h2>¡Pedido recibido!</h2>
-          <p>Tu pedido está preparado. Realiza el pago antes de enviarlo a cocina.</p>
+          <p>Tu pedido está registrado. Realiza el pago para continuar.</p>
           <div class="order-number">${order}</div>
 
           <div style="margin:18px 0;padding:18px;border:1px solid #d7e5dc;border-radius:16px;background:#f4fbf7">
             <div style="font-size:13px;color:#5b6b60;font-weight:800;margin-bottom:6px">TOTAL DEL PEDIDO</div>
             <div style="font-size:32px;font-weight:950;margin-bottom:14px">${money(totals.total)}</div>
 
-            <button onclick="openMercadoPago()"
+            <button id="mercadoPagoBtn" onclick="openMercadoPago()"
                     style="width:100%;background:#009ee3;color:#fff;border:0;border-radius:14px;padding:15px;font-weight:950;font-size:16px">
               PAGAR CON MERCADO PAGO
             </button>
 
             <div id="paymentStatus" class="send-status" style="margin-top:12px;color:#8a5a00">
-              El pedido todavía NO se ha enviado a cocina.
+              Pedido registrado. Esperando pago.
             </div>
 
-            <button id="confirmPaidBtn"
-                    onclick="confirmarPagoManualYEnviar()"
-                    style="width:100%;margin-top:12px;background:#167d4d;color:#fff;border:0;border-radius:14px;padding:15px;font-weight:950;font-size:15px">
-              YA PAGUÉ — ENVIAR PEDIDO
-            </button>
-
             <div style="font-size:12px;color:#737373;line-height:1.45;margin-top:10px">
-              Prueba temporal: Mercado Pago todavía no confirma el pago automáticamente.
-              Usa el botón verde solamente después de haber realizado el pago.
+              El pago se confirma automáticamente. No necesitas pulsar ningún botón después de pagar.
             </div>
           </div>
 
@@ -1384,8 +1459,8 @@ Favor de confirmar quién toma el envío.`;
           </div>
         </div>`;
 
-      // El pedido queda preparado, pero NO se libera a cocina
-      // hasta que el cliente confirme manualmente que pagó en Mercado Pago.
+      // El pedido quedó registrado como "esperando_pago".
+      // El webhook confirma el pago automáticamente.
       cart=[];
       saveCart();
     }
